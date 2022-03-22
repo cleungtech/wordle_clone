@@ -1,13 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView } from 'react-native';
 import { colors } from "./src/constants";
 
 export default function App() {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
       <Text style={styles.title}>WORDLE</Text>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -16,7 +16,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.black,
     alignItems: 'center',
-    justifyContent: 'center',
   },
   title: {
     color: colors.lightgrey,
