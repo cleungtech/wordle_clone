@@ -22,10 +22,10 @@ const Keyboard = ({
    * Determine the color of the key
    * @param {string} key - name of the key
    * @returns {string} - the color of the key based on previous attempt:
-   *                     primary - in the word at the correct position
-   *                     secondary - in the word but at the incorrect position
-   *                     dark grey - not in the word
-   *                     grey - not attempted before
+   *                       primary - in the word at the correct position
+   *                       secondary - in the word but at the incorrect position
+   *                       dark grey - not in the word
+   *                       grey - not attempted before
    */
   const getKeyBGColor = (key) => {
     if (greenCaps.includes(key)) {

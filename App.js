@@ -3,7 +3,6 @@ import { StyleSheet, Text, View, SafeAreaView, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { colors, CLEAR, ENTER } from "./src/constants";
 import Keyboard from "./src/components/Keyboard";
-import { color } from 'react-native/Libraries/Components/View/ReactNativeStyleAttributes';
 
 const NUMBER_OF_TRIES = 5;
 /**
@@ -17,13 +16,14 @@ const copyArray = (originalArray) => {
 
 export default function App() {
 
+  // The answer word
   const word = "HELLO";
   const letters = word.split("");
 
+  // States
   const [rows, setRows] = useState(new Array(NUMBER_OF_TRIES).fill(
     new Array(letters.length).fill("")
   ));
-
   const [currentRow, setCurrentRow] = useState(0);
   const [currentColumn, setCurrentColumn] = useState(0);
 
@@ -66,12 +66,51 @@ export default function App() {
 
   /**
    * Determine if the current cell (row, column) is active.
-   * @param {*} row - the row (i)
-   * @param {*} column - the column (j)
+   * @param {number} row - the row (i)
+   * @param {number} column - the column (j)
    * @returns - true if the cell is current active, false otherwise.
    */
   const isCellActive = (row, column) => {
     return row === currentRow && column === currentColumn;
+  }
+
+  /**
+   * Evaluate the letter in the cell and determine the background color.
+   * @param {number} row - the row number (i) of the cell
+   * @param {number} column - the column number (j) of the cell
+   * @returns - appropriate background color of the cell:
+   *              primary - letter in the word at the correct position
+   *              secondary - in the word but at the incorrect position
+   *              dark grey - not in the word, 
+   *                          or the cell is at the current row
+   */
+  const getCellBackGroundColor = (row, column) => {
+    if (row >= currentRow) {
+      return colors.darkgrey;
+    }
+    const letter = rows[row][column].toUpperCase();
+    if (letter === letters[column]) {
+      return colors.primary;
+    }
+    if (letters.includes(letter)) {
+      return colors.secondary;
+    }
+    return colors.darkgrey;
+  }
+
+  /**
+   * Evaluate all previous attempts and 
+   *   return a list of letter for a specified color to be shown on keyboard.
+   * @param {string} color - the specified color to be used for filter
+   * @returns - an array of previously attempted letter for the specified color
+   */
+  const getAllLettersWithColor = (color) => {
+
+    return rows.flatMap((row, i) => 
+      row.filter((cell, j) => {
+        return getCellBackGroundColor(i, j) === color && i < currentRow;
+      })
+    );
   }
 
   return (
@@ -85,9 +124,10 @@ export default function App() {
           {row.map((letter, j) => (
             <View key={`cell-${i}-${j}`} style={[styles.cell, 
               { 
-                borderColor: isCellActive(i, j) 
-                ? colors.lightgrey 
-                : colors.darkgrey,
+                borderColor: isCellActive(i, j)
+                  ? colors.lightgrey 
+                  : colors.darkgrey,
+                backgroundColor: getCellBackGroundColor(i, j),
               }]}>
               <Text style={styles.cellText}>{letter.toUpperCase()}</Text>
             </View>
@@ -95,7 +135,12 @@ export default function App() {
         </View>
         ))}
       </ScrollView>
-      <Keyboard onKeyPressed={onKeyPressed}/>
+      <Keyboard 
+        onKeyPressed={onKeyPressed}
+        greenCaps = {getAllLettersWithColor(colors.primary)}
+        yellowCaps = {getAllLettersWithColor(colors.secondary)}
+        greyCaps = {getAllLettersWithColor(colors.darkgrey)}
+        />
     </SafeAreaView>
   );
 }
@@ -115,7 +160,6 @@ const styles = StyleSheet.create({
   map: {
     alignSelf: "stretch",
     marginVertical: 20,
-    height: 100,
   },
   row: {
     alignSelf: "stretch",
