@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { StyleSheet, Text, View, SafeAreaView, ScrollView } from 'react-native';
+import { useState, useEffect } from "react";
+import { StyleSheet, Text, View, SafeAreaView, ScrollView, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { colors, CLEAR, ENTER } from "./src/constants";
 import Keyboard from "./src/components/Keyboard";
@@ -26,6 +26,29 @@ export default function App() {
   ));
   const [currentRow, setCurrentRow] = useState(0);
   const [currentColumn, setCurrentColumn] = useState(0);
+  const [gameState, setGameState] = useState("IN_PROGRESS");   // WON, LOST, IN_PROGRESS
+
+  // Check game state when entering a new row
+  useEffect(() => {
+    if (currentRow > 0) {
+      checkGameState();
+    }
+  }, [currentRow]);
+
+  /**
+   * Determine the game status based on the previous row.
+   *   Should only be used when currentRow is greater than 0.
+   */
+  const checkGameState = () => {
+    const previousRow = rows[currentRow - 1];
+    if (previousRow.every((letter, i) => letter.toUpperCase() === letters[i])) {
+      setGameState("WON");
+      Alert.alert("You won!");
+    } else if (currentRow === NUMBER_OF_TRIES) {
+      setGameState("LOST");
+      Alert.alert("You lost!");
+    }
+  }
 
   /**
    * Update the game status when a key is pressed on the keyboard,
@@ -33,6 +56,11 @@ export default function App() {
    * @param {string} key - the key being pressed
    */
   const onKeyPressed = (key) => {
+
+    // Disable keyboard if the game is over
+    if (gameState !== "IN_PROGRESS") {
+      return;
+    }
 
     const updatedRows = copyArray(rows);
 
