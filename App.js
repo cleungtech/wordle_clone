@@ -24,7 +24,7 @@ export default function App() {
 
   // States
   const [gameState, setGameState] = useState("IN_PROGRESS");   // WON, LOST, IN_PROGRESS
-  const [letters, setLetters] = useState(new Array(wordList[0].length).fill(""));
+  const [letters, setLetters] = useState(null);
   const [rows, setRows] = useState(new Array(NUMBER_OF_TRIES).fill(
     new Array(wordList[0].length).fill("")
   ));
@@ -41,6 +41,7 @@ export default function App() {
       return;
     }
     const word = wordList[Math.floor(Math.random() * wordList.length)];
+    console.log(`The word is ${word}.`)
     const new_letters = word.split("");
     setLetters(new_letters);
   }
@@ -79,7 +80,9 @@ export default function App() {
     // Game lost
     } else if (isLastTry && gameState !== "LOST") {
       setGameState("LOST");
-      Alert.alert("You lost!");
+      Alert.alert("You lost!",
+                  `The word is ${letters.join("").toUpperCase()}!`,
+                  [{ text: "Share", onPress: shareScore }]);
     }
   }
 
