@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { StyleSheet, Text, View, SafeAreaView, ScrollView, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { colors, CLEAR, ENTER } from "./src/constants";
+import { CLEAR, ENTER, colors, colorsToEmoji } from "./src/constants";
 import Keyboard from "./src/components/Keyboard";
+import * as Clipboard from 'expo-clipboard';
 
 const NUMBER_OF_TRIES = 5;
 /**
@@ -40,19 +41,46 @@ export default function App() {
    *   Should only be used when currentRow is greater than 0.
    */
   const checkGameState = () => {
+
     const previousRow = rows[currentRow - 1];
-    if (previousRow.every((letter, i) => letter.toUpperCase() === letters[i])) {
+    const isCorrectAnswer = previousRow.every((letter, i) => 
+      letter.toUpperCase() === letters[i]);
+    const isLastTry = currentRow === NUMBER_OF_TRIES;
+
+    // Game won
+    if (isCorrectAnswer && gameState !== "WON") {
       setGameState("WON");
-      Alert.alert("You won!");
-    } else if (currentRow === NUMBER_OF_TRIES) {
+      Alert.alert("You won!", 
+                  `It took you ${currentRow} ` + 
+                  `${currentRow === 1 ? "try" : "tries"}.`, 
+                  [{ text: "Share", onPress: shareScore }]);
+
+    // Game lost
+    } else if (isLastTry && gameState !== "LOST") {
       setGameState("LOST");
       Alert.alert("You lost!");
     }
   }
 
   /**
+   * Handle sharing of game score using emoji.
+   *   Create a string of emoji representing the game progress and status and
+   *   copy to the clipboard.
+   */
+  const shareScore = () => {
+    const textMap = rows.map((row, i) => 
+      row.map((cell, j) => colorsToEmoji[getCellBackGroundColor(i, j)]).join("")
+    )
+    .filter((row) => row)
+    .join("\n")
+    const textShare = `Wordle ${currentRow}/${NUMBER_OF_TRIES}\n\n${textMap}`;
+    Clipboard.setString(textShare);
+    Alert.alert("Copied! \n\n Paste anywhere to share!");
+  }
+
+  /**
    * Update the game status when a key is pressed on the keyboard,
-   *  including the currentRow, currentColumn, and rows.
+   *   including the currentRow, currentColumn, and rows.
    * @param {string} key - the key being pressed
    */
   const onKeyPressed = (key) => {
@@ -114,7 +142,7 @@ export default function App() {
    */
   const getCellBackGroundColor = (row, column) => {
     if (row >= currentRow) {
-      return colors.darkgrey;
+      return colors.black;
     }
     const letter = rows[row][column].toUpperCase();
     if (letter === letters[column]) {
@@ -136,13 +164,12 @@ export default function App() {
 
     return rows.flatMap((row, i) => 
       row.filter((cell, j) => {
-        return getCellBackGroundColor(i, j) === color && i < currentRow;
+        return getCellBackGroundColor(i, j) === color;
       })
     );
   }
 
   return (
-    
     <SafeAreaView style={styles.container}>
       <StatusBar style="light"/>
       <Text style={styles.title}>WORDLE</Text>
@@ -187,7 +214,7 @@ const styles = StyleSheet.create({
   },
   map: {
     alignSelf: "stretch",
-    marginVertical: 20,
+    marginVertical: 10,
   },
   row: {
     alignSelf: "stretch",
