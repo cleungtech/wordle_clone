@@ -17,17 +17,38 @@ const copyArray = (originalArray) => {
 
 export default function App() {
 
-  // The answer word
-  const word = "HELLO";
-  const letters = word.split("");
+  const wordList = [
+    "hello",
+    "world"
+  ]
 
   // States
+  const [gameState, setGameState] = useState("IN_PROGRESS");   // WON, LOST, IN_PROGRESS
+  const [letters, setLetters] = useState(new Array(wordList[0].length).fill(""));
   const [rows, setRows] = useState(new Array(NUMBER_OF_TRIES).fill(
-    new Array(letters.length).fill("")
+    new Array(wordList[0].length).fill("")
   ));
   const [currentRow, setCurrentRow] = useState(0);
   const [currentColumn, setCurrentColumn] = useState(0);
-  const [gameState, setGameState] = useState("IN_PROGRESS");   // WON, LOST, IN_PROGRESS
+
+  /**
+   * Pick a random word out of a list of words when the game is (re)started.
+   * @param {Array} wordList - an array of words of the same length
+   * @returns - an array of letters of a randomly chosen word
+   */
+  const pickRandomWord = (wordList) => {
+    if (gameState !== "IN_PROGRESS") {
+      return;
+    }
+    const word = wordList[Math.floor(Math.random() * wordList.length)];
+    const new_letters = word.split("");
+    setLetters(new_letters);
+  }
+
+  // Pick a new word randomly when the game is (re)started
+  useEffect(() => {
+    pickRandomWord(wordList);
+  }, [gameState])
 
   // Check game state when entering a new row
   useEffect(() => {
@@ -44,7 +65,7 @@ export default function App() {
 
     const previousRow = rows[currentRow - 1];
     const isCorrectAnswer = previousRow.every((letter, i) => 
-      letter.toUpperCase() === letters[i]);
+      letter === letters[i]);
     const isLastTry = currentRow === NUMBER_OF_TRIES;
 
     // Game won
@@ -144,7 +165,7 @@ export default function App() {
     if (row >= currentRow) {
       return colors.black;
     }
-    const letter = rows[row][column].toUpperCase();
+    const letter = rows[row][column];
     if (letter === letters[column]) {
       return colors.primary;
     }
