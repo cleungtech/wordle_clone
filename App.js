@@ -75,15 +75,31 @@ export default function App() {
       Alert.alert("You won!", 
                   `It took you ${currentRow} ` + 
                   `${currentRow === 1 ? "try" : "tries"}.`, 
-                  [{ text: "Share", onPress: shareScore }]);
+                  [{ text: "Share", onPress: shareScore },
+                   { text: "Restart", onPress: restartGame }]);
 
     // Game lost
     } else if (isLastTry && gameState !== "LOST") {
       setGameState("LOST");
       Alert.alert("You lost!",
                   `The word is ${letters.join("").toUpperCase()}!`,
-                  [{ text: "Share", onPress: shareScore }]);
+                  [{ text: "Share", onPress: shareScore },
+                   { text: "Restart", onPress: restartGame }]);
     }
+  }
+
+  /**
+   * Handle restarting the game and reseting all game status.
+   *   A new word will be randomly selected.
+   */
+  const restartGame = () => {
+    setGameState("RESTART");
+    setGameState("IN_PROGRESS");
+    setRows(new Array(NUMBER_OF_TRIES).fill(
+      new Array(wordList[0].length).fill("")
+    ));
+    setCurrentRow(0);
+    setCurrentColumn(0);  
   }
 
   /**
